@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
 )
 
 const filename = `create_tags_gen.go`
@@ -97,7 +97,7 @@ import (
 {{- end }}
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/tfresource"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/tfresource"
 )
 
 const EventualConsistencyTimeout = 5 * time.Minute

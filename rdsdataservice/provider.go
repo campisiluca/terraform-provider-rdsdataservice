@@ -3,8 +3,8 @@ package rdsdataservice
 import (
 	"log"
 
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/mutexkv"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/mutexkv"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	tfs3 "github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/service/s3"
+	tfs3 "github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 )
 

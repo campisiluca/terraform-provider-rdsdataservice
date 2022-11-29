@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
 )
 
 const filename = `get_tag_gen.go`

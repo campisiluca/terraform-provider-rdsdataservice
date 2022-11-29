@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/hashcode"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/hashcode"
 )
 
 const clientVpnAuthorizationRuleIDSeparator = ","

@@ -23,7 +23,7 @@ Go 1.13 (to build the provider plugin)
 You will need to install the binary as a [terraform third party plugin](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins). Terraform will then pick up the binary from the local filesystem when you run `terraform init`.
 
 ```sh
-curl -s https://raw.githubusercontent.com/awsiv/terraform-provider-rdsdataservice/master/install.sh | bash
+curl -s https://raw.githubusercontent.com/campisiluca/terraform-provider-rdsdataservice/master/install.sh | bash
 ```
 
 ## Usage
@@ -52,7 +52,7 @@ resource "rdsdataservice_postgres_role" "test" {
 ## Building The Provider
 
 ```bash
-$ git clone git@github.com:awsiv/terraform-provider-rdsdataservice.git
+$ git clone git@github.com:campisiluca/terraform-provider-rdsdataservice.git
 $ cd terraform-provider-rdsdataservice
 $ go build
 ```

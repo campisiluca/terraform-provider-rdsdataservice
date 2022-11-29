@@ -156,7 +156,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/workmail"
 	"github.com/aws/aws-sdk-go/service/workspaces"
 	"github.com/aws/aws-sdk-go/service/xray"
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/keyvaluetags"
 	awsbase "github.com/hashicorp/aws-sdk-go-base"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )

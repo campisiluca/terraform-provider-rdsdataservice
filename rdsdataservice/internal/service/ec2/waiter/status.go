@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	tfec2 "github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/service/ec2"
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice/internal/service/ec2/finder"
+	tfec2 "github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/service/ec2"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice/internal/service/ec2/finder"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
