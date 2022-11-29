@@ -1,11 +1,6 @@
 # terraform-provider-rdsdataservice
 
-Manage AWS DB resources using the [AWS Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html). Connect using methods supported by Data API(secrets manager) and manage a variety of resources using a single provider without having to use multiple providers for different DB types.
-
-Heavily inspired by the following:
-
-- [terraform-provider-aws](https://github.com/terraform-providers/terraform-provider-aws) - Provider configutation and connectivity
-- [terraform-provider-postgresql](https://github.com/terraform-providers/terraform-provider-postgresql) - DB specific actions and tests
+Manage Postgres db resources using the AWS Data API - Heavily inspired by [terraform-provider-postgresql](https://github.com/terraform-providers/terraform-provider-postgresql)
 
 [AWS Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html) allows us to run SQL using HTTP endpoint and AWS SDK. This is awesome because it means that we no longer need to manage connections. This also uses secretsmanager secret so we no longer have to worry about secrets ending up in terraform state.
 
@@ -23,14 +18,14 @@ Go 1.13 (to build the provider plugin)
 You will need to install the binary as a [terraform third party plugin](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins). Terraform will then pick up the binary from the local filesystem when you run `terraform init`.
 
 ```sh
-curl -s https://raw.githubusercontent.com/campisiluca/terraform-provider-rdsdataservice/master/install.sh | bash
+curl -s https://raw.githubusercontent.com/awsiv/terraform-provider-rdsdataservice/master/install.sh | bash
 ```
 
 ## Usage
 
 ```terraform
 provider "rdsdataservice" {
-  version = "1.0.2"
+  version = "1.0.0"
   region  = var.aws_region
   profile = var.aws_profile
 }
@@ -47,12 +42,4 @@ resource "rdsdataservice_postgres_role" "test" {
   login        = true
 }
 
-```
-
-## Building The Provider
-
-```bash
-$ git clone git@github.com:campisiluca/terraform-provider-rdsdataservice.git
-$ cd terraform-provider-rdsdataservice
-$ go build
 ```

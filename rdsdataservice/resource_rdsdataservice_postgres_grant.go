@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/rdsdataservice"
 	"github.com/lib/pq"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 var objectTypes = map[string]string{
@@ -58,7 +58,7 @@ func resourceAwsRdsdataservicePostgresGrant() *schema.Resource {
 				*/
 				Description: "The PostgreSQL object type to grant the privileges on (one of: table, sequence)",
 			},
-			"privileges": {
+			"privileges": &schema.Schema{
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},

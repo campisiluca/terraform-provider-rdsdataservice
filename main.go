@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice"
+	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 )
 
 func main() {
