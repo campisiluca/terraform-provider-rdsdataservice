@@ -21,7 +21,7 @@ kernel_lower=$(echo $kernel | tr "[:upper:]" "[:lower:]")
 terraform_plugins="$HOME/.terraform.d/plugins/${kernel_lower}_$ARCH/"
 
 # IFS= preserve newlines
-IFS= manifest=$(curl -s https://api.github.com/repos/awsiv/terraform-provider-rdsdataservice/releases/latest)
+IFS= manifest=$(curl -s https://api.github.com/repos/campisiluca/terraform-provider-rdsdataservice/releases/latest)
 
 url=$(echo $manifest \
 | grep "browser_download_url.*${kernel}_${arch}" \

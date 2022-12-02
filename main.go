@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/awsiv/terraform-provider-rdsdataservice/rdsdataservice"
+	"github.com/campisiluca/terraform-provider-rdsdataservice/rdsdataservice"
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 )
 

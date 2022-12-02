@@ -1,4 +1,4 @@
-module github.com/awsiv/terraform-provider-rdsdataservice
+module github.com/campisiluca/terraform-provider-rdsdataservice
 
 go 1.13
 
