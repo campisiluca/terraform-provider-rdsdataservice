@@ -168,6 +168,10 @@ func resourceAwsRdsdataservicePostgresRoleCreate(d *schema.ResourceData, meta in
 	if err != nil {
 		return fmt.Errorf("Error creating Postgres Role: %#v", err)
 	}
+	d.SetId(d.Get("name").(string))
+	log.Printf("[INFO] Postgres Role ID: %s", d.Id())
+
+	return err
 }
 
 func resourceAwsRdsdataservicePostgresRoleDelete(d *schema.ResourceData, meta interface{}) error {
