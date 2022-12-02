@@ -29,7 +29,7 @@ func resourceAwsRdsdataservicePostgresRole() *schema.Resource {
 			},
 			"database": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The PostgreSQL database name to connect to.",
 			},
 			"login": {
@@ -228,14 +228,7 @@ func resourceAwsRdsdataservicePostgresRoleExists(d *schema.ResourceData, meta in
 func resourceAwsRdsdataservicePostgresRoleRead(d *schema.ResourceData, meta interface{}) error {
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
-	sql := fmt.Sprintf(`SELECT 
-		rolname,
-		rolsuper,
-		rolinherit, 
-		rolcreaterole,
-		rolcreatedb,
-		rolcanlogin 
-		FROM pg_catalog.pg_roles WHERE rolname=%s`,
+	sql := fmt.Sprintf("SELECT rolname, rolsuper, rolinherit, rolcreaterole, rolcreatedb, rolcanlogin FROM pg_catalog.pg_roles WHERE rolname='%s';",
 		d.Get("database").(string),
 	)
 

@@ -15,6 +15,8 @@ func resourceAwsRdsdataservicePostgresSchema() *schema.Resource {
 		Create: resourceAwsRdsdataservicePostgresSchemaCreate,
 		Delete: resourceAwsRdsdataservicePostgresSchemaDelete,
 		Exists: resourceAwsRdsdataservicePostgresSchemaExists,
+		Update: resourceAwsRdsdataservicePostgresSchemaUpdate,
+		Read:   resourceAwsRdsdataservicePostgresSchemaRead,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -40,6 +42,11 @@ func resourceAwsRdsdataservicePostgresSchema() *schema.Resource {
 				Required:    true,
 				Description: "Schema name.",
 			},
+			"owner": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Schema Owner.",
+			},
 		},
 	}
 }
@@ -47,8 +54,9 @@ func resourceAwsRdsdataservicePostgresSchema() *schema.Resource {
 func resourceAwsRdsdataservicePostgresSchemaCreate(d *schema.ResourceData, meta interface{}) error {
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
-	sql := fmt.Sprintf("CREATE SCHEMA %s;",
-		d.Get("name").(string))
+	sql := fmt.Sprintf("CREATE SCHEMA %s AUTHORIZATION %s;",
+		d.Get("name").(string),
+		d.Get("owner").(string))
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
 		ResourceArn: aws.String(d.Get("resource_arn").(string)),
@@ -106,6 +114,7 @@ func resourceAwsRdsdataservicePostgresSchemaExists(d *schema.ResourceData, meta 
 		ResourceArn: aws.String(d.Get("resource_arn").(string)),
 		SecretArn:   aws.String(d.Get("secret_arn").(string)),
 		Sql:         aws.String(sql),
+		Database:	 aws.String(d.Get("database").(string)),
 	}
 
 	log.Printf("[DEBUG] Check Postgres Schema exists: %#v", createOpts)
@@ -121,4 +130,93 @@ func resourceAwsRdsdataservicePostgresSchemaExists(d *schema.ResourceData, meta 
 	}
 
 	return true, nil
+}
+func resourceAwsRdsdataservicePostgresSchemaUpdate(d *schema.ResourceData, meta interface{}) error {
+	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
+
+	if d.HasChange("name") {
+		oraw, nraw := d.GetChange("name")
+		o := oraw.(string)
+		n := nraw.(string)
+		if n == "" {
+			return fmt.Errorf("Error setting Schema name to an empty string")
+		}
+
+		sql := fmt.Sprintf("ALTER SCHEMA %s RENAME TO %s", o, n)
+
+		createOpts := rdsdataservice.ExecuteStatementInput{
+			ResourceArn: aws.String(d.Get("resource_arn").(string)),
+			SecretArn:   aws.String(d.Get("secret_arn").(string)),
+			Sql:         aws.String(sql),
+			Database:	 aws.String(d.Get("database").(string)),
+		}
+
+		log.Printf("[DEBUG] Update Postgres Schema name: %#v", createOpts)
+
+		_, err := rdsdataserviceconn.ExecuteStatement(&createOpts)
+
+		if err != nil {
+			return fmt.Errorf("Error updating Postgres Schema name: %#v", err)
+		}
+		d.SetId(n)
+	}
+
+	if d.HasChange("owner") {
+		oraw, nraw := d.GetChange("owner")
+		o := oraw.(string)
+		n := nraw.(string)
+		if n == "" {
+			return fmt.Errorf("Error setting Schema owner to an empty string")
+		}
+
+		sql := fmt.Sprintf("ALTER SCHEMA %s OWNER TO %s", o, n)
+
+		createOpts := rdsdataservice.ExecuteStatementInput{
+			ResourceArn: aws.String(d.Get("resource_arn").(string)),
+			SecretArn:   aws.String(d.Get("secret_arn").(string)),
+			Sql:         aws.String(sql),
+			Database:	 aws.String(d.Get("database").(string)),
+		}
+
+		log.Printf("[DEBUG] Update Postgres Schema owner: %#v", createOpts)
+
+		_, err := rdsdataserviceconn.ExecuteStatement(&createOpts)
+
+		if err != nil {
+			return fmt.Errorf("Error updating Postgres Schema owner: %#v", err)
+		}
+	}
+
+	return nil
+}
+func resourceAwsRdsdataservicePostgresSchemaRead(d *schema.ResourceData, meta interface{}) error {
+	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
+
+	sql := fmt.Sprintf("SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname='%s';",
+		d.Get("name").(string))
+
+	createOpts := rdsdataservice.ExecuteStatementInput{
+		ResourceArn: aws.String(d.Get("resource_arn").(string)),
+		SecretArn:   aws.String(d.Get("secret_arn").(string)),
+		Sql:         aws.String(sql),
+	}
+
+	log.Printf("[DEBUG] Read Postgres Schema: %#v", createOpts)
+
+	output, err := rdsdataserviceconn.ExecuteStatement(&createOpts)
+
+	if err != nil {
+		return fmt.Errorf("Error reading Postgres Schema: %#v", err)
+	}
+
+	if len(output.Records) != 1 {
+		d.SetId("")
+		return nil
+	}
+
+	log.Printf("[DEBUG] Read Postgres Schema details: %#v", output)
+	d.Set("name", output.Records[0][0].StringValue)
+	d.Set("owner", output.Records[0][1].StringValue)
+
+	return err
 }
