@@ -13,10 +13,10 @@ import (
 func resourceAwsRdsdataservicePostgresSchema() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceAwsRdsdataservicePostgresSchemaCreate,
+		Read:   resourceAwsRdsdataservicePostgresSchemaRead,
+		Update: resourceAwsRdsdataservicePostgresSchemaUpdate,
 		Delete: resourceAwsRdsdataservicePostgresSchemaDelete,
 		Exists: resourceAwsRdsdataservicePostgresSchemaExists,
-		Update: resourceAwsRdsdataservicePostgresSchemaUpdate,
-		Read:   resourceAwsRdsdataservicePostgresSchemaRead,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -107,7 +107,7 @@ func resourceAwsRdsdataservicePostgresSchemaDelete(d *schema.ResourceData, meta 
 func resourceAwsRdsdataservicePostgresSchemaExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
-	sql := fmt.Sprintf("SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname='%s';",
+	sql := fmt.Sprintf("SELECT schema_name FROM information_schema.schemata where schema_name='%s';",
 		d.Get("name").(string))
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
@@ -192,13 +192,14 @@ func resourceAwsRdsdataservicePostgresSchemaUpdate(d *schema.ResourceData, meta 
 func resourceAwsRdsdataservicePostgresSchemaRead(d *schema.ResourceData, meta interface{}) error {
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
-	sql := fmt.Sprintf("SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname='%s';",
+	sql := fmt.Sprintf("SELECT schema_name FROM information_schema.schemata where schema_name='%s';",
 		d.Get("name").(string))
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
 		ResourceArn: aws.String(d.Get("resource_arn").(string)),
 		SecretArn:   aws.String(d.Get("secret_arn").(string)),
 		Sql:         aws.String(sql),
+		Database:	 aws.String(d.Get("database").(string)),
 	}
 
 	log.Printf("[DEBUG] Read Postgres Schema: %#v", createOpts)

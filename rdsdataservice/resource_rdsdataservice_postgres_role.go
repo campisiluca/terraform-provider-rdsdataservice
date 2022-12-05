@@ -27,11 +27,6 @@ func resourceAwsRdsdataservicePostgresRole() *schema.Resource {
 				Required:    true,
 				Description: "The PostgreSQL role Name.",
 			},
-			"database": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The PostgreSQL database name to connect to.",
-			},
 			"login": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -69,6 +64,11 @@ func resourceAwsRdsdataservicePostgresRole() *schema.Resource {
 				Set:         schema.HashString,
 				MinItems:    0,
 				Description: "Role(s) to grant to this new role.",
+			},
+			"rolename": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Role Name to grant for the new role.",
 			},
 			"superuser": {
 				Type:        schema.TypeBool,
@@ -145,6 +145,13 @@ func resourceAwsRdsdataservicePostgresRoleCreate(d *schema.ResourceData, meta in
 			login = fmt.Sprintf(" NOLOGIN ")
 		}
 	}
+	rolename := ""
+	if attr, ok := d.GetOk("rolename"); ok {
+		rolename = fmt.Sprintf(" %s ", attr.(string))
+	} else {
+		rolename = fmt.Sprintf("root")
+	}
+
 	sql := fmt.Sprintf("CREATE ROLE %s WITH %s %s %s %s %s %s;",
 		name,
 		login,
@@ -168,6 +175,25 @@ func resourceAwsRdsdataservicePostgresRoleCreate(d *schema.ResourceData, meta in
 	if err != nil {
 		return fmt.Errorf("Error creating Postgres Role: %#v", err)
 	}
+
+	sqlgrant := fmt.Sprintf("GRANT %s to %s;",
+		name,
+		rolename,
+	)
+
+	createOptsGrant := rdsdataservice.ExecuteStatementInput{
+		ResourceArn: aws.String(d.Get("resource_arn").(string)),
+		SecretArn:   aws.String(d.Get("secret_arn").(string)),
+		Sql:         aws.String(sqlgrant),
+	}
+
+	log.Printf("[DEBUG] Grant Postgres Role: %#v", createOptsGrant)
+
+	_, errgrant := rdsdataserviceconn.ExecuteStatement(&createOptsGrant)
+
+	if errgrant != nil {
+		return fmt.Errorf("Error granting Postgres Role: %#v", errgrant)
+	}
 	d.SetId(d.Get("name").(string))
 	log.Printf("[INFO] Postgres Role ID: %s", d.Id())
 
@@ -177,8 +203,43 @@ func resourceAwsRdsdataservicePostgresRoleCreate(d *schema.ResourceData, meta in
 func resourceAwsRdsdataservicePostgresRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
+
+	sqldropowner := fmt.Sprintf("REASSIGN OWNED BY %s TO root;",
+		d.Get("name").(string))
+
+	createOptsdropowner := rdsdataservice.ExecuteStatementInput{
+		ResourceArn: aws.String(d.Get("resource_arn").(string)),
+		SecretArn:   aws.String(d.Get("secret_arn").(string)),
+		Sql:         aws.String(sqldropowner),
+	}
+
+	log.Printf("[DEBUG] Drop Postgres Role: %#v", createOptsdropowner)
+
+	_, errdropowner := rdsdataserviceconn.ExecuteStatement(&createOptsdropowner)
+
+	if errdropowner != nil {
+		return fmt.Errorf("Error dropping Postgres Role: %#v", errdropowner)
+	}
+
+	sqldropownerend := fmt.Sprintf("DROP OWNED BY %s;",
+		d.Get("name").(string))
+
+	createOptsdropownerend := rdsdataservice.ExecuteStatementInput{
+		ResourceArn: aws.String(d.Get("resource_arn").(string)),
+		SecretArn:   aws.String(d.Get("secret_arn").(string)),
+		Sql:         aws.String(sqldropownerend),
+	}
+
+	log.Printf("[DEBUG] Drop Postgres Role: %#v", createOptsdropownerend)
+
+	_, errdropownerend := rdsdataserviceconn.ExecuteStatement(&createOptsdropownerend)
+
+	if errdropownerend != nil {
+		return fmt.Errorf("Error dropping Postgres Role: %#v", errdropownerend)
+	}
+
 	sql := fmt.Sprintf("DROP ROLE %s",
-		d.Get("database").(string))
+		d.Get("name").(string))
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
 		ResourceArn: aws.String(d.Get("resource_arn").(string)),
@@ -202,7 +263,7 @@ func resourceAwsRdsdataservicePostgresRoleExists(d *schema.ResourceData, meta in
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
 	sql := fmt.Sprintf("SELECT rolname FROM pg_catalog.pg_roles WHERE rolname='%s'",
-		d.Get("database").(string))
+		d.Get("name").(string))
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
 		ResourceArn: aws.String(d.Get("resource_arn").(string)),
@@ -229,7 +290,7 @@ func resourceAwsRdsdataservicePostgresRoleRead(d *schema.ResourceData, meta inte
 	rdsdataserviceconn := meta.(*AWSClient).rdsdataserviceconn
 
 	sql := fmt.Sprintf("SELECT rolname, rolsuper, rolinherit, rolcreaterole, rolcreatedb, rolcanlogin FROM pg_catalog.pg_roles WHERE rolname='%s';",
-		d.Get("database").(string),
+		d.Get("name").(string),
 	)
 
 	createOpts := rdsdataservice.ExecuteStatementInput{
@@ -238,12 +299,12 @@ func resourceAwsRdsdataservicePostgresRoleRead(d *schema.ResourceData, meta inte
 		Sql:         aws.String(sql),
 	}
 
-	log.Printf("[DEBUG] Read Postgres Database: %#v", createOpts)
+	log.Printf("[DEBUG] Read Postgres Role: %#v", createOpts)
 
 	output, err := rdsdataserviceconn.ExecuteStatement(&createOpts)
 
 	if err != nil {
-		return fmt.Errorf("Error reading Postgres Database: %#v", err)
+		return fmt.Errorf("Error reading Postgres Role: %#v", err)
 	}
 
 	if len(output.Records) != 1 {
@@ -251,7 +312,7 @@ func resourceAwsRdsdataservicePostgresRoleRead(d *schema.ResourceData, meta inte
 		return nil
 	}
 
-	d.Set("database", output.Records[0][0].StringValue)
+	d.Set("name", output.Records[0][0].StringValue)
 	d.Set("rolsuper", output.Records[0][1].StringValue)
 	d.Set("rolinherit", output.Records[0][1].StringValue)
 	d.Set("rolcreaterole", output.Records[0][1].StringValue)
@@ -260,7 +321,7 @@ func resourceAwsRdsdataservicePostgresRoleRead(d *schema.ResourceData, meta inte
 
 	// TODO: password
 
-	d.SetId(d.Get("database").(string))
+	d.SetId(d.Get("name").(string))
 	return err
 }
 
@@ -269,12 +330,12 @@ func resourceAwsRdsdataservicePostgresRoleUpdate(d *schema.ResourceData, meta in
 
 	// TODO: run this in transaction
 
-	if d.HasChange("database") {
-		oraw, nraw := d.GetChange("database")
+	if d.HasChange("name") {
+		oraw, nraw := d.GetChange("name")
 		o := oraw.(string)
 		n := nraw.(string)
 		if n == "" {
-			return fmt.Errorf("Error setting role database to an empty string")
+			return fmt.Errorf("Error setting role Name to an empty string")
 		}
 
 		sql := fmt.Sprintf("ALTER ROLE %s RENAME TO %s", o, n)
@@ -302,7 +363,7 @@ func resourceAwsRdsdataservicePostgresRoleUpdate(d *schema.ResourceData, meta in
 			tok = "LOGIN"
 		}
 
-		sql := fmt.Sprintf("ALTER ROLE %s WITH %s", d.Get("database").(string), tok)
+		sql := fmt.Sprintf("ALTER ROLE %s WITH %s", d.Get("name").(string), tok)
 
 		createOpts := rdsdataservice.ExecuteStatementInput{
 			ResourceArn: aws.String(d.Get("resource_arn").(string)),

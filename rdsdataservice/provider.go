@@ -160,6 +160,7 @@ func Provider() terraform.ResourceProvider {
 			"rdsdataservice_postgres_database": resourceAwsRdsdataservicePostgresDatabase(),
 			"rdsdataservice_postgres_schema": resourceAwsRdsdataservicePostgresSchema(),
 			"rdsdataservice_postgres_role":     resourceAwsRdsdataservicePostgresRole(),
+			"rdsdataservice_postgres_grant":	resourceAwsRdsdataservicePostgresGrant(),
 		},
 	}
 
